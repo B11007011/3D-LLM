@@ -1,16 +1,25 @@
-console.log('Debug script running');
-console.log('Current working directory:', process.cwd());
-console.log('NODE_ENV:', process.env.NODE_ENV);
-
-// Test file system operations
 const fs = require('fs');
 const path = require('path');
 
-try {
-  const files = fs.readdirSync('.');
-  console.log('Files in current directory:', files);
-} catch (error) {
-  console.error('Error reading directory:', error);
+// Create log file
+const logFile = path.join(process.cwd(), 'debug.log');
+fs.writeFileSync(logFile, 'Debug log started\n');
+
+// Log to file function
+function log(message) {
+  fs.appendFileSync(logFile, message + '\n');
 }
 
-console.log('Debug script completed'); 
+log('Debug script running');
+log('Current working directory: ' + process.cwd());
+log('NODE_ENV: ' + process.env.NODE_ENV);
+
+// Test file system operations
+try {
+  const files = fs.readdirSync('.');
+  log('Files in current directory: ' + JSON.stringify(files));
+} catch (error) {
+  log('Error reading directory: ' + error.message);
+}
+
+log('Debug script completed'); 
