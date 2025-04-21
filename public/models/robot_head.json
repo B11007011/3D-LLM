@@ -1,0 +1,102 @@
+{
+  "metadata": {
+    "version": 4.5,
+    "type": "Object",
+    "generator": "3D-LLM Platform"
+  },
+  "geometries": [
+    {
+      "uuid": "C2EDFA87-5EBD-4C91-8F2A-7CBDEC12A84E",
+      "type": "SphereGeometry",
+      "radius": 0.8,
+      "widthSegments": 32,
+      "heightSegments": 32
+    },
+    {
+      "uuid": "E3BF9D21-7A2C-43E1-B0F5-6D8A1C5D9A3F",
+      "type": "CylinderGeometry",
+      "radiusTop": 0.2,
+      "radiusBottom": 0.2,
+      "height": 0.4,
+      "radialSegments": 16
+    },
+    {
+      "uuid": "F4A7C358-9BD1-42E2-A6A3-8E91F2C0BD5A",
+      "type": "SphereGeometry",
+      "radius": 0.15,
+      "widthSegments": 16,
+      "heightSegments": 16
+    }
+  ],
+  "materials": [
+    {
+      "uuid": "7A95D3B2-61FE-48A5-9C2D-1F3B5EA82D71",
+      "type": "MeshStandardMaterial",
+      "color": 2500134,
+      "roughness": 0.3,
+      "metalness": 0.9,
+      "emissive": 0,
+      "side": 2
+    },
+    {
+      "uuid": "D2C7F86B-3E1D-4A9C-8D5F-9A7B1C3E2D4F",
+      "type": "MeshStandardMaterial",
+      "color": 16776960,
+      "roughness": 0.5,
+      "metalness": 0.2,
+      "emissive": 16776960,
+      "emissiveIntensity": 0.5,
+      "side": 2
+    },
+    {
+      "uuid": "8B62D4F9-5A3E-42C1-B7D8-6F9A2E3C4B5D",
+      "type": "MeshStandardMaterial",
+      "color": 16711680,
+      "roughness": 0.7,
+      "metalness": 0.2,
+      "emissive": 16711680,
+      "emissiveIntensity": 0.3,
+      "side": 2
+    }
+  ],
+  "object": {
+    "uuid": "5EA7C3B2-9D4F-48E7-A6C5-1F3B9E2D4A8C",
+    "type": "Group",
+    "name": "Robot Head",
+    "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+    "children": [
+      {
+        "uuid": "A1B2C3D4-E5F6-4A5B-8C7D-9E8F7A6B5C4D",
+        "type": "Mesh",
+        "name": "Head",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+        "geometry": "C2EDFA87-5EBD-4C91-8F2A-7CBDEC12A84E",
+        "material": "7A95D3B2-61FE-48A5-9C2D-1F3B5EA82D71"
+      },
+      {
+        "uuid": "B2C3D4E5-F6A7-5B8C-9D0E-1F2A3B4C5D6E",
+        "type": "Mesh",
+        "name": "Eye Left",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,-0.3,0.2,0.75,1],
+        "geometry": "F4A7C358-9BD1-42E2-A6A3-8E91F2C0BD5A",
+        "material": "D2C7F86B-3E1D-4A9C-8D5F-9A7B1C3E2D4F"
+      },
+      {
+        "uuid": "C3D4E5F6-A7B8-6C9D-0E1F-2A3B4C5D6E7F",
+        "type": "Mesh",
+        "name": "Eye Right",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0.3,0.2,0.75,1],
+        "geometry": "F4A7C358-9BD1-42E2-A6A3-8E91F2C0BD5A",
+        "material": "D2C7F86B-3E1D-4A9C-8D5F-9A7B1C3E2D4F"
+      },
+      {
+        "uuid": "D4E5F6A7-B8C9-7D0E-1F2A-3B4C5D6E7F8A",
+        "type": "Mesh",
+        "name": "Antenna",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0.8,0,1],
+        "geometry": "E3BF9D21-7A2C-43E1-B0F5-6D8A1C5D9A3F",
+        "material": "8B62D4F9-5A3E-42C1-B7D8-6F9A2E3C4B5D"
+      }
+    ]
+  }
+} 

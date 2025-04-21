@@ -3,6 +3,7 @@ import ChatInterface from "@/components/ChatInterface";
 import ProjectDashboard from "@/components/ProjectDashboard";
 import ThreeDViewer from "@/components/ThreeDViewer";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import DemoNavigation from "@/components/DemoNavigation";
 
 // Define the type for our active tab
 type TabType = 'project' | 'team' | 'tools' | 'files' | 'versions' | 'graphs' | 'importExport' | '3dView';
@@ -32,9 +33,9 @@ const ProjectAssistant = () => {
   
   // Mock data for the 3D models in this project
   const demoModels = [
-    { id: 1, name: 'Robot_Base_v2.blend', url: '/models/robot_base.glb' },
-    { id: 2, name: 'Robot_Head.glb', url: '/models/robot_head.glb' },
-    { id: 3, name: 'Robot_Arm.fbx', url: '/models/robot_arm.glb' }
+    { id: 1, name: 'Robot_Base_v2.blend', url: '/models/robot_base.json' },
+    { id: 2, name: 'Robot_Head.glb', url: '/models/robot_head.json' },
+    { id: 3, name: 'Robot_Arm.fbx', url: '/models/robot_arm.json' }
   ];
   
   // State to track which model is currently selected for viewing
@@ -70,7 +71,9 @@ const ProjectAssistant = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col h-screen">
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <DemoNavigation currentPath="/" />
+      
+      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between mt-10">
         <div className="flex items-center">
           <span className="material-icons text-primary mr-2">view_in_ar</span>
           <h1 className="text-xl font-semibold text-gray-800">3D Project Assistant</h1>

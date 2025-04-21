@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from 'path';
 
 console.log("Starting server...");
 console.log("NODE_ENV:", process.env.NODE_ENV);
@@ -18,6 +19,8 @@ async function setupServer() {
     app.use(cors()); // Allow cross-origin requests
     app.use(express.json({ limit: '50mb' })); // Increase limit for 3D model uploads
     app.use(express.urlencoded({ extended: false }));
+    app.use(express.static(path.join(process.cwd(), 'public')));
+    app.use(express.static(path.join(process.cwd(), 'dist')));
     
     // Request logging middleware
     app.use((req, res, next) => {

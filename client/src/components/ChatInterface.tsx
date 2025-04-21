@@ -19,6 +19,8 @@ interface ChatMessage {
   // Optional metadata
   tokens?: number;
   processingTime?: number;
+  isTyping?: boolean;
+  fullText?: string;
 }
 
 interface ChatInterfaceProps {
@@ -40,7 +42,18 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
     { role: "system", content: "You are an AI assistant specialized in 3D modeling and project management." },
     { role: "assistant", content: "What can I help you build today? 3D asset, scene, or something else?" }
   ]);
+  
+  // Suggested prompts for the demo
+  const suggestedPrompts = [
+    "I want to create a sci-fi robot for a game.",
+    "Show me the 3D model viewer.",
+    "Help me set up a project timeline.",
+    "Compare Blender vs. Maya for this project.",
+    "How should I organize my team?"
+  ];
+  
   const conversationRef = useRef<HTMLDivElement>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-scroll to bottom of conversation when messages change
   useEffect(() => {
@@ -48,6 +61,15 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
       conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
     }
   }, [messages]);
+  
+  // Cleanup typing animation interval on unmount
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+      }
+    };
+  }, []);
 
   const addMessage = (text: string, sender: "user" | "bot", pending: boolean = false, error: boolean = false, metadata: Record<string, any> = {}) => {
     const id = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -75,20 +97,43 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
       )
     );
   };
-
-  const handleSend = async () => {
-    if (!inputValue.trim()) return;
+  
+  // Simulate typing animation for bot messages
+  const simulateTyping = (text: string, id: string) => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
     
-    const userInput = inputValue.trim();
+    let charIndex = 0;
+    updateMessage(id, { isTyping: true, fullText: text, text: "" });
+    
+    typingIntervalRef.current = setInterval(() => {
+      if (charIndex <= text.length) {
+        updateMessage(id, { text: text.substring(0, charIndex) });
+        charIndex++;
+      } else {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        updateMessage(id, { isTyping: false });
+      }
+    }, 15); // Speed of typing animation
+  };
+
+  const handleSend = async (userInput?: string) => {
+    const textToSend = userInput || inputValue.trim();
+    if (!textToSend) return;
+    
     setInputValue("");
     
     // Add user message
-    addMessage(userInput, "user");
+    addMessage(textToSend, "user");
     
     // Update chat history
     const updatedHistory = [
       ...chatHistory,
-      { role: "user", content: userInput }
+      { role: "user", content: textToSend }
     ];
     setChatHistory(updatedHistory);
     
@@ -99,15 +144,10 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
       setIsLoading(true);
       
       // Call the LLM service to process the message
-      const response = await processMessage(userInput, { previousMessages: updatedHistory });
+      const response = await processMessage(textToSend, { previousMessages: updatedHistory });
       
-      // Update the pending message with the actual response
-      updateMessage(pendingId, { 
-        text: response.text, 
-        pending: false,
-        tokens: response.tokens,
-        processingTime: response.processingTime
-      });
+      // Update the pending message with typing animation
+      simulateTyping(response.text, pendingId);
       
       // Update chat history
       setChatHistory([
@@ -156,6 +196,15 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
       { role: "assistant", content: initialMessage.text }
     ]);
   };
+  
+  const handleSuggestedPrompt = (prompt: string) => {
+    setInputValue(prompt);
+    // Auto-focus the textarea
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+      textarea.focus();
+    }
+  };
 
   return (
     <div className="h-full flex flex-col bg-white">
@@ -164,7 +213,7 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <span className="material-icons text-primary mr-2">smart_toy</span>
-            <h2 className="font-medium text-gray-800">AI Assistant</h2>
+            <h2 className="font-medium text-gray-800">3D Project Assistant</h2>
           </div>
           <div className="flex space-x-2">
             <TooltipProvider>
@@ -197,90 +246,104 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <span className="material-icons text-sm">help_outline</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Help</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
           </div>
         </div>
       </div>
       
-      {/* Conversation Area */}
+      {/* Messages */}
       <div 
-        ref={conversationRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+        ref={conversationRef} 
+        className="flex-1 overflow-y-auto p-4 space-y-4"
       >
         {messages.map((message) => (
-          <div 
-            key={message.id} 
-            className={`message-container flex ${message.sender === 'user' ? 'justify-end' : ''}`}
-          >
-            <div 
-              className={`message max-w-[85%] ${
-                message.sender === 'user' 
-                  ? 'bg-primary text-white' 
-                  : message.error 
-                    ? 'bg-red-50 border border-red-200 text-red-800' 
-                    : 'bg-white border border-gray-200 shadow-sm'
-              } rounded-lg p-3 text-sm relative ${message.pending ? 'opacity-70' : ''}`}
-            >
-              <p>{message.text}</p>
-              <div className="flex justify-between items-center text-xs opacity-70 mt-1">
-                {message.processingTime && !message.pending && message.sender === 'bot' && (
-                  <span className="text-gray-500">
-                    {message.tokens} tokens · {(message.processingTime / 1000).toFixed(1)}s
-                  </span>
-                )}
-                <span className={message.processingTime ? "ml-auto" : ""}>
+          <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] rounded-lg p-3 ${
+              message.sender === 'user' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-gray-100 text-gray-900'
+            } ${message.pending ? 'opacity-70' : ''} ${message.error ? 'bg-red-100 text-red-800' : ''}`}>
+              <div className="flex justify-between items-start">
+                <div className="break-words">
+                  {message.text}
+                  {message.isTyping && <span className="animate-pulse">|</span>}
+                </div>
+              </div>
+              <div className="mt-1 text-right">
+                <span className={`text-[10px] ${message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'}`}>
                   {formatTime(message.timestamp)}
                 </span>
               </div>
-              {message.pending && (
-                <div className="absolute right-2 top-2 animate-pulse">
-                  <span className="material-icons text-sm">more_horiz</span>
-                </div>
-              )}
             </div>
           </div>
         ))}
       </div>
       
+      {/* Suggested Prompts */}
+      <div className="px-4 pt-2 pb-0">
+        <div className="flex flex-wrap gap-2 mb-2">
+          {suggestedPrompts.map((prompt, index) => (
+            <button
+              key={index}
+              className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+              onClick={() => handleSuggestedPrompt(prompt)}
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+      </div>
+      
       {/* Input Area */}
-      <div className="p-3 border-t border-gray-200 bg-white">
-        <div className="flex flex-col space-y-2">
-          <Textarea 
+      <div className="p-4 border-t border-gray-200">
+        <div className="flex space-x-2">
+          <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeypress}
-            className="flex-1 min-h-[80px] border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm resize-none"
-            placeholder="Type your message..."
+            placeholder="Type a message..."
+            className="min-h-[60px] resize-none"
             disabled={isLoading}
           />
-          <div className="flex justify-between items-center">
-            <div className="text-xs text-gray-500">
-              Try asking about: project setup, team management, file versions
-            </div>
-            <Button 
-              onClick={handleSend}
-              disabled={isLoading || !inputValue.trim()}
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              {isLoading ? (
-                <span className="material-icons animate-spin text-sm mr-1">refresh</span>
-              ) : (
-                <span className="material-icons text-sm mr-1">send</span>
-              )}
-              Send
-            </Button>
+          <Button 
+            variant="default" 
+            size="icon" 
+            className="h-[60px] w-[60px]"
+            onClick={() => handleSend()}
+            disabled={isLoading || !inputValue.trim()}
+          >
+            <span className="material-icons">send</span>
+          </Button>
+        </div>
+        <div className="flex justify-between items-center mt-2">
+          <div className="text-xs text-gray-500">
+            {isLoading ? "AI is thinking..." : "Ask me anything about 3D project management"}
+          </div>
+          <div className="flex space-x-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <span className="material-icons text-sm">mic</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Voice input (coming soon)</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <span className="material-icons text-sm">attach_file</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Attach file (coming soon)</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </div>

@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "version": 4.5,
+    "type": "Object",
+    "generator": "3D-LLM Platform"
+  },
+  "geometries": [
+    {
+      "uuid": "D5F8A2E7-C4B9-4D1E-A6F3-B8C7D9E5F2A1",
+      "type": "BoxGeometry",
+      "width": 0.4,
+      "height": 0.4,
+      "depth": 0.4
+    },
+    {
+      "uuid": "E6A1F9D5-B7C2-4E3A-B9F8-C7D6E5F4A3B2",
+      "type": "CylinderGeometry",
+      "radiusTop": 0.15,
+      "radiusBottom": 0.15,
+      "height": 1.2,
+      "radialSegments": 16
+    },
+    {
+      "uuid": "F7B2A1E6-C8D3-4F5E-B0A9-D8C7E6F5B4A3",
+      "type": "BoxGeometry",
+      "width": 0.3,
+      "height": 0.3,
+      "depth": 0.8
+    },
+    {
+      "uuid": "A1B2C3D4-E5F6-4A5B-8C7D-9E8F7A6B5C4D",
+      "type": "SphereGeometry",
+      "radius": 0.2,
+      "widthSegments": 16,
+      "heightSegments": 16
+    },
+    {
+      "uuid": "B2C3D4E5-F6A7-5B8C-9D0E-1F2A3B4C5D6E",
+      "type": "CylinderGeometry",
+      "radiusTop": 0.1,
+      "radiusBottom": 0.1,
+      "height": 0.3,
+      "radialSegments": 16
+    }
+  ],
+  "materials": [
+    {
+      "uuid": "A7B8C9D0-E1F2-4A3B-5C6D-7E8F9A0B1C2D",
+      "type": "MeshStandardMaterial",
+      "color": 3355443,
+      "roughness": 0.5,
+      "metalness": 0.8,
+      "emissive": 0,
+      "side": 2
+    },
+    {
+      "uuid": "B8C9D0E1-F2A3-5B4C-6D7E-8F9A0B1C2D3E",
+      "type": "MeshStandardMaterial",
+      "color": 2500134,
+      "roughness": 0.3,
+      "metalness": 0.9,
+      "emissive": 0,
+      "side": 2
+    },
+    {
+      "uuid": "C9D0E1F2-A3B4-6C5D-7E8F-9A0B1C2D3E4F",
+      "type": "MeshStandardMaterial",
+      "color": 255,
+      "roughness": 0.7,
+      "metalness": 0.3,
+      "emissive": 0,
+      "side": 2
+    }
+  ],
+  "object": {
+    "uuid": "D0E1F2A3-B4C5-6D7E-8F9A-0B1C2D3E4F5A",
+    "type": "Group",
+    "name": "Robot Arm",
+    "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+    "children": [
+      {
+        "uuid": "E1F2A3B4-C5D6-7E8F-9A0B-1C2D3E4F5A6B",
+        "type": "Mesh",
+        "name": "Shoulder",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+        "geometry": "D5F8A2E7-C4B9-4D1E-A6F3-B8C7D9E5F2A1",
+        "material": "A7B8C9D0-E1F2-4A3B-5C6D-7E8F9A0B1C2D"
+      },
+      {
+        "uuid": "F2A3B4C5-D6E7-8F9A-0B1C-2D3E4F5A6B7C",
+        "type": "Mesh",
+        "name": "Upper Arm",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,-0.6,0,1],
+        "geometry": "E6A1F9D5-B7C2-4E3A-B9F8-C7D6E5F4A3B2",
+        "material": "B8C9D0E1-F2A3-5B4C-6D7E-8F9A0B1C2D3E"
+      },
+      {
+        "uuid": "A3B4C5D6-E7F8-9A0B-1C2D-3E4F5A6B7C8D",
+        "type": "Mesh",
+        "name": "Elbow",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,-1.2,0,1],
+        "geometry": "A1B2C3D4-E5F6-4A5B-8C7D-9E8F7A6B5C4D",
+        "material": "A7B8C9D0-E1F2-4A3B-5C6D-7E8F9A0B1C2D"
+      },
+      {
+        "uuid": "B4C5D6E7-F8A9-0B1C-2D3E-4F5A6B7C8D9E",
+        "type": "Mesh",
+        "name": "Forearm",
+        "matrix": [1,0,0,0,0,0,1,0,0,-1,0,0,0,-1.5,0,1],
+        "geometry": "F7B2A1E6-C8D3-4F5E-B0A9-D8C7E6F5B4A3",
+        "material": "B8C9D0E1-F2A3-5B4C-6D7E-8F9A0B1C2D3E"
+      },
+      {
+        "uuid": "C5D6E7F8-A9B0-1C2D-3E4F-5A6B7C8D9E0F",
+        "type": "Group",
+        "name": "Hand",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,-1.5,-0.4,1],
+        "children": [
+          {
+            "uuid": "D6E7F8A9-B0C1-2D3E-4F5A-6B7C8D9E0F1A",
+            "type": "Mesh",
+            "name": "Finger1",
+            "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,-0.1,0,0,1],
+            "geometry": "B2C3D4E5-F6A7-5B8C-9D0E-1F2A3B4C5D6E",
+            "material": "C9D0E1F2-A3B4-6C5D-7E8F-9A0B1C2D3E4F"
+          },
+          {
+            "uuid": "E7F8A9B0-C1D2-3E4F-5A6B-7C8D9E0F1A2B",
+            "type": "Mesh",
+            "name": "Finger2",
+            "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0.1,0,0,1],
+            "geometry": "B2C3D4E5-F6A7-5B8C-9D0E-1F2A3B4C5D6E",
+            "material": "C9D0E1F2-A3B4-6C5D-7E8F-9A0B1C2D3E4F"
+          }
+        ]
+      }
+    ]
+  }
+} 

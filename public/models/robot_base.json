@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "version": 4.5,
+    "type": "Object",
+    "generator": "3D-LLM Platform"
+  },
+  "geometries": [
+    {
+      "uuid": "B1FCDE46-83C1-4E0E-A15A-5B43DD521621",
+      "type": "BoxGeometry",
+      "width": 2,
+      "height": 0.5,
+      "depth": 2
+    },
+    {
+      "uuid": "7AC95D4E-9D4B-4E17-B4F9-D4FA8A6C1A2F",
+      "type": "CylinderGeometry",
+      "radiusTop": 0.5,
+      "radiusBottom": 0.7,
+      "height": 1.2,
+      "radialSegments": 16
+    },
+    {
+      "uuid": "D1A6BEFC-5302-4CAF-9CB1-F41E3E8C0B2A",
+      "type": "BoxGeometry",
+      "width": 0.3,
+      "height": 0.8,
+      "depth": 0.3
+    }
+  ],
+  "materials": [
+    {
+      "uuid": "6F0A0978-A71A-4D4E-8FB7-2FCFC1C26A46",
+      "type": "MeshStandardMaterial",
+      "color": 3355443,
+      "roughness": 0.5,
+      "metalness": 0.8,
+      "emissive": 0,
+      "side": 2
+    },
+    {
+      "uuid": "42DD7F4C-7654-4C21-A89D-343C82C95BFD",
+      "type": "MeshStandardMaterial",
+      "color": 2500134,
+      "roughness": 0.3,
+      "metalness": 0.9,
+      "emissive": 0,
+      "side": 2
+    },
+    {
+      "uuid": "8A95C76D-2CFE-49E9-B62F-31A520C83DFA",
+      "type": "MeshStandardMaterial",
+      "color": 16711680,
+      "roughness": 0.7,
+      "metalness": 0.2,
+      "emissive": 0,
+      "side": 2
+    }
+  ],
+  "object": {
+    "uuid": "4FD5E53C-66C9-466E-A3BC-01DEEA498C76",
+    "type": "Group",
+    "name": "Robot Base",
+    "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+    "children": [
+      {
+        "uuid": "F7DA9B3A-D9F0-4A5B-A1EB-4D21684C58A1",
+        "type": "Mesh",
+        "name": "Base",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+        "geometry": "B1FCDE46-83C1-4E0E-A15A-5B43DD521621",
+        "material": "6F0A0978-A71A-4D4E-8FB7-2FCFC1C26A46"
+      },
+      {
+        "uuid": "38B2FF67-7D6F-49C9-8153-122DFAEE14A7",
+        "type": "Mesh",
+        "name": "Body",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0.8,0,1],
+        "geometry": "7AC95D4E-9D4B-4E17-B4F9-D4FA8A6C1A2F",
+        "material": "42DD7F4C-7654-4C21-A89D-343C82C95BFD"
+      },
+      {
+        "uuid": "5FD6A2AB-C9AC-4B8E-934F-D3C2F98D9BBA",
+        "type": "Mesh",
+        "name": "Antenna",
+        "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,1.9,0,1],
+        "geometry": "D1A6BEFC-5302-4CAF-9CB1-F41E3E8C0B2A",
+        "material": "8A95C76D-2CFE-49E9-B62F-31A520C83DFA"
+      }
+    ]
+  }
+} 
