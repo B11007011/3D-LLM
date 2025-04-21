@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ChatInterface from "@/components/ChatInterface";
 import ProjectDashboard from "@/components/ProjectDashboard";
+import ThreeDViewer from "@/components/ThreeDViewer";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 
 // Define the type for our active tab
@@ -28,6 +29,16 @@ const ProjectAssistant = () => {
 
   // State to track which tab is active in the main panel
   const [activeTab, setActiveTab] = useState<TabType>('project');
+  
+  // Mock data for the 3D models in this project
+  const demoModels = [
+    { id: 1, name: 'Robot_Base_v2.blend', url: '/models/robot_base.glb' },
+    { id: 2, name: 'Robot_Head.glb', url: '/models/robot_head.glb' },
+    { id: 3, name: 'Robot_Arm.fbx', url: '/models/robot_arm.glb' }
+  ];
+  
+  // State to track which model is currently selected for viewing
+  const [selectedModel, setSelectedModel] = useState(demoModels[0]);
 
   // Function to update UI based on user input triggers
   const updateUI = (uiType: string | null) => {
@@ -52,6 +63,8 @@ const ProjectAssistant = () => {
     } else if (uiType === 'importExport') {
       setVisibleUI({ ...visibleUI, projectSetup: true, importExport: true });
       setActiveTab('importExport');
+    } else if (uiType === '3dView') {
+      setActiveTab('3dView');
     }
   };
 
@@ -151,14 +164,36 @@ const ProjectAssistant = () => {
               {/* Main Content Area */}
               <ResizablePanel defaultSize={70}>
                 {activeTab === '3dView' ? (
-                  <div className="h-full bg-gray-900 flex items-center justify-center">
-                    <div className="text-center">
-                      <span className="material-icons text-gray-400 text-6xl mb-4">view_in_ar</span>
-                      <h2 className="text-gray-300 text-lg mb-2">3D Viewport</h2>
-                      <p className="text-gray-500 text-sm max-w-md">
-                        This is where the 3D model would be displayed. In a full implementation, 
-                        this would use WebGL with Three.js or a similar library.
-                      </p>
+                  <div className="h-full bg-gray-900 p-4 flex flex-col">
+                    <div className="mb-4 flex justify-between items-center">
+                      <h2 className="text-gray-300 text-lg">3D Viewport - {selectedModel.name}</h2>
+                      <div className="flex gap-2">
+                        <select 
+                          className="bg-gray-800 text-gray-300 border border-gray-700 rounded px-2 py-1 text-sm"
+                          value={selectedModel.id}
+                          onChange={(e) => {
+                            const modelId = parseInt(e.target.value);
+                            const model = demoModels.find(m => m.id === modelId);
+                            if (model) setSelectedModel(model);
+                          }}
+                        >
+                          {demoModels.map(model => (
+                            <option key={model.id} value={model.id}>{model.name}</option>
+                          ))}
+                        </select>
+                        <button className="bg-gray-800 text-gray-300 border border-gray-700 rounded px-2 py-1 text-sm flex items-center">
+                          <span className="material-icons text-sm mr-1">upload</span>
+                          Upload
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1">
+                      <ThreeDViewer 
+                        modelUrl={selectedModel.url}
+                        height="100%"
+                        autoRotate={true}
+                      />
                     </div>
                   </div>
                 ) : (
@@ -192,8 +227,11 @@ const ProjectAssistant = () => {
                 <div className="p-3 font-mono text-xs">
                   <div className="text-green-400">{"> "}Project initialized successfully</div>
                   <div className="text-gray-400">{"> "}Loading assets...</div>
-                  <div className="text-gray-400">{"> "}Assets loaded: Robot_Base_v2.blend</div>
+                  <div className="text-gray-400">{"> "}Assets loaded: {selectedModel.name}</div>
                   <div className="text-gray-400">{"> "}Ready for editing</div>
+                  {activeTab === '3dView' && (
+                    <div className="text-blue-400">{"> "}3D Viewport active: {selectedModel.name}</div>
+                  )}
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>

@@ -1,9 +1,24 @@
 import { useState, useRef, useEffect } from "react";
-import { responses } from "@/lib/responses";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
+import { processMessage } from "@/lib/llmService";
 
 interface ChatMessage {
+  id: string;
   text: string;
   sender: "user" | "bot";
+  timestamp: Date;
+  pending?: boolean;
+  error?: boolean;
+  // Optional metadata
+  tokens?: number;
+  processingTime?: number;
 }
 
 interface ChatInterfaceProps {
@@ -13,11 +28,18 @@ interface ChatInterfaceProps {
 const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
+      id: "welcome",
       text: "What can I help you build today? 3D asset, scene, or something else?",
-      sender: "bot"
+      sender: "bot",
+      timestamp: new Date()
     }
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [chatHistory, setChatHistory] = useState<Array<{role: string, content: string}>>([
+    { role: "system", content: "You are an AI assistant specialized in 3D modeling and project management." },
+    { role: "assistant", content: "What can I help you build today? 3D asset, scene, or something else?" }
+  ]);
   const conversationRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom of conversation when messages change
@@ -27,42 +49,112 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
     }
   }, [messages]);
 
-  const addMessage = (text: string, sender: "user" | "bot") => {
-    setMessages((prevMessages) => [...prevMessages, { text, sender }]);
+  const addMessage = (text: string, sender: "user" | "bot", pending: boolean = false, error: boolean = false, metadata: Record<string, any> = {}) => {
+    const id = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    
+    setMessages((prevMessages) => [
+      ...prevMessages, 
+      { 
+        id, 
+        text, 
+        sender, 
+        timestamp: new Date(),
+        pending,
+        error,
+        ...metadata
+      }
+    ]);
+    
+    return id;
   };
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  const updateMessage = (id: string, updates: Partial<ChatMessage>) => {
+    setMessages(prevMessages => 
+      prevMessages.map(msg => 
+        msg.id === id ? { ...msg, ...updates } : msg
+      )
+    );
+  };
 
-    // Add user message
-    addMessage(inputValue, "user");
+  const handleSend = async () => {
+    if (!inputValue.trim()) return;
     
-    // Process input against response patterns
-    const input = inputValue.trim();
+    const userInput = inputValue.trim();
     setInputValue("");
     
-    // Simulate typing delay
-    setTimeout(() => {
-      // Find matching response pattern
-      const matchedResponse = responses.find(r => 
-        r.triggers.some(regex => regex.test(input))
-      );
+    // Add user message
+    addMessage(userInput, "user");
+    
+    // Update chat history
+    const updatedHistory = [
+      ...chatHistory,
+      { role: "user", content: userInput }
+    ];
+    setChatHistory(updatedHistory);
+    
+    // Add pending bot message
+    const pendingId = addMessage("...", "bot", true);
+    
+    try {
+      setIsLoading(true);
       
-      if (matchedResponse) {
-        addMessage(matchedResponse.reply, "bot");
-        if (matchedResponse.ui) {
-          updateUI(matchedResponse.ui);
-        }
-      } else {
-        addMessage("I'll help with that. What else would you like to configure?", "bot");
+      // Call the LLM service to process the message
+      const response = await processMessage(userInput, { previousMessages: updatedHistory });
+      
+      // Update the pending message with the actual response
+      updateMessage(pendingId, { 
+        text: response.text, 
+        pending: false,
+        tokens: response.tokens,
+        processingTime: response.processingTime
+      });
+      
+      // Update chat history
+      setChatHistory([
+        ...updatedHistory,
+        { role: "assistant", content: response.text }
+      ]);
+      
+      // Trigger UI update if needed
+      if (response.ui) {
+        updateUI(response.ui);
       }
-    }, 700);
+    } catch (error) {
+      console.error("Error processing message:", error);
+      updateMessage(pendingId, { 
+        text: "Sorry, I encountered an error processing your request. Please try again.",
+        pending: false,
+        error: true
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeypress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleSend();
     }
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const clearConversation = () => {
+    const initialMessage = {
+      id: `msg-${Date.now()}`,
+      text: "What can I help you build today? 3D asset, scene, or something else?",
+      sender: "bot" as const,
+      timestamp: new Date()
+    };
+    
+    setMessages([initialMessage]);
+    setChatHistory([
+      { role: "system", content: "You are an AI assistant specialized in 3D modeling and project management." },
+      { role: "assistant", content: initialMessage.text }
+    ]);
   };
 
   return (
@@ -75,12 +167,49 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
             <h2 className="font-medium text-gray-800">AI Assistant</h2>
           </div>
           <div className="flex space-x-2">
-            <button className="text-gray-500 hover:text-gray-800">
-              <span className="material-icons text-sm">settings</span>
-            </button>
-            <button className="text-gray-500 hover:text-gray-800">
-              <span className="material-icons text-sm">help_outline</span>
-            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={clearConversation}
+                  >
+                    <span className="material-icons text-sm">refresh</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Clear conversation</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <span className="material-icons text-sm">settings</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Assistant Settings</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <span className="material-icons text-sm">help_outline</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Help</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </div>
@@ -90,19 +219,36 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
         ref={conversationRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
       >
-        {messages.map((message, index) => (
+        {messages.map((message) => (
           <div 
-            key={index} 
+            key={message.id} 
             className={`message-container flex ${message.sender === 'user' ? 'justify-end' : ''}`}
           >
             <div 
               className={`message max-w-[85%] ${
                 message.sender === 'user' 
                   ? 'bg-primary text-white' 
-                  : 'bg-white border border-gray-200 shadow-sm'
-              } rounded-lg p-3 text-sm`}
+                  : message.error 
+                    ? 'bg-red-50 border border-red-200 text-red-800' 
+                    : 'bg-white border border-gray-200 shadow-sm'
+              } rounded-lg p-3 text-sm relative ${message.pending ? 'opacity-70' : ''}`}
             >
               <p>{message.text}</p>
+              <div className="flex justify-between items-center text-xs opacity-70 mt-1">
+                {message.processingTime && !message.pending && message.sender === 'bot' && (
+                  <span className="text-gray-500">
+                    {message.tokens} tokens · {(message.processingTime / 1000).toFixed(1)}s
+                  </span>
+                )}
+                <span className={message.processingTime ? "ml-auto" : ""}>
+                  {formatTime(message.timestamp)}
+                </span>
+              </div>
+              {message.pending && (
+                <div className="absolute right-2 top-2 animate-pulse">
+                  <span className="material-icons text-sm">more_horiz</span>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -110,25 +256,32 @@ const ChatInterface = ({ updateUI }: ChatInterfaceProps) => {
       
       {/* Input Area */}
       <div className="p-3 border-t border-gray-200 bg-white">
-        <div className="flex">
-          <input 
-            type="text" 
+        <div className="flex flex-col space-y-2">
+          <Textarea 
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeypress}
-            className="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+            className="flex-1 min-h-[80px] border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm resize-none"
             placeholder="Type your message..."
+            disabled={isLoading}
           />
-          <button 
-            onClick={handleSend}
-            className="bg-primary text-white px-3 py-2 rounded-r-lg hover:bg-blue-600 transition-colors"
-          >
-            <span className="material-icons text-sm">send</span>
-          </button>
-        </div>
-        <div className="text-xs text-gray-500 mt-2">
-          Try these commands: "Object, textures, animation", "team members", "compare tools", 
-          "file management", "version control", "progress graphs", "import export"
+          <div className="flex justify-between items-center">
+            <div className="text-xs text-gray-500">
+              Try asking about: project setup, team management, file versions
+            </div>
+            <Button 
+              onClick={handleSend}
+              disabled={isLoading || !inputValue.trim()}
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              {isLoading ? (
+                <span className="material-icons animate-spin text-sm mr-1">refresh</span>
+              ) : (
+                <span className="material-icons text-sm mr-1">send</span>
+              )}
+              Send
+            </Button>
+          </div>
         </div>
       </div>
     </div>

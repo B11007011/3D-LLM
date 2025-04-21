@@ -1,14 +1,19 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
 
 console.log("Starting server...");
 console.log("NODE_ENV:", process.env.NODE_ENV);
 
 const app = express();
-app.use(express.json());
+
+// Middleware
+app.use(cors()); // Allow cross-origin requests
+app.use(express.json({ limit: '50mb' })); // Increase limit for 3D model uploads
 app.use(express.urlencoded({ extended: false }));
 
+// Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -24,8 +29,15 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      
+      // Omit large response bodies (like model data) from logs
+      if (capturedJsonResponse && path !== "/api/ai/analyze-model") {
+        const responseStr = JSON.stringify(capturedJsonResponse);
+        if (responseStr.length <= 500) {
+          logLine += ` :: ${responseStr}`;
+        } else {
+          logLine += ` :: [Large response: ${Math.ceil(responseStr.length / 1024)} KB]`;
+        }
       }
 
       if (logLine.length > 80) {
@@ -50,13 +62,31 @@ app.get('/test', (req, res) => {
     const server = await registerRoutes(app);
     console.log("Routes registered successfully");
 
+    // Global error handler
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       console.error("Server error:", err);
+      
+      // Add specific handling for different types of errors
+      if (err.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation Error", 
+          errors: err.errors 
+        });
+      }
+      
+      // Handle specific error types from the AI services
+      if (err.name === 'AIServiceError') {
+        return res.status(503).json({ 
+          message: "AI Service Unavailable",
+          details: err.message
+        });
+      }
+      
+      // Default error handling
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
 
       res.status(status).json({ message });
-      throw err;
     });
 
     // importantly only setup vite in development and after

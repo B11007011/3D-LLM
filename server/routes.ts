@@ -385,10 +385,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).end();
   });
 
-  // Apply validation error handler
+  // AI/LLM routes
+  
+  // Route for processing text messages with the LLM
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      const { message, history, projectId } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+      
+      // In a real implementation, this would call an LLM API
+      // For now, just return a mock response
+      
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const response = {
+        text: `I've processed your message: "${message}"`,
+        ui: null as string | null,
+        tokens: Math.floor(Math.random() * 100) + 50,
+        processingTime: Math.floor(Math.random() * 1000) + 200
+      };
+      
+      // Check for UI action triggers
+      if (/file|files|manage/i.test(message)) {
+        response.text = "I've added file management capabilities to your project. You can now view, organize, and track your project files.";
+        response.ui = "fileManagement";
+      } else if (/team|teammate|member/i.test(message)) {
+        response.text = "I've added your team members to the project dashboard. Would you like to add more details about their roles?";
+        response.ui = "teamSetup";
+      } else if (/3d|view|model|preview/i.test(message)) {
+        response.text = "I've opened the 3D viewer for you. You can interact with your models here.";
+        response.ui = "3dView";
+      }
+      
+      res.json(response);
+    } catch (error) {
+      console.error("Error processing AI message:", error);
+      res.status(500).json({ message: "Error processing your request" });
+    }
+  });
+  
+  // Route for analyzing 3D models
+  app.post("/api/ai/analyze-model", async (req, res) => {
+    try {
+      const { modelUrl, modelType } = req.body;
+      
+      if (!modelUrl) {
+        return res.status(400).json({ message: "Model URL is required" });
+      }
+      
+      // In a real implementation, this would analyze the 3D model
+      // For now, just return a mock response
+      
+      // Simulate processing delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const modelInfo = {
+        vertices: Math.floor(Math.random() * 10000) + 1000,
+        faces: Math.floor(Math.random() * 5000) + 500,
+        materials: Math.floor(Math.random() * 5) + 1,
+        textures: Math.floor(Math.random() * 3) + 1,
+        fileSize: Math.floor(Math.random() * 100) + 5, // MB
+        optimizationTips: [
+          "Consider reducing polygon count in non-visible areas",
+          "Texture resolution could be optimized for better performance",
+          "Some mesh elements could be combined for better rendering"
+        ]
+      };
+      
+      res.json({
+        modelInfo,
+        processingTime: Math.floor(Math.random() * 2000) + 1000
+      });
+    } catch (error) {
+      console.error("Error analyzing 3D model:", error);
+      res.status(500).json({ message: "Error analyzing the model" });
+    }
+  });
+
+  // Create the HTTP server
+  const server = createServer(app);
+  
+  // Apply error handling middleware
   app.use(handleValidationErrors);
 
-  const httpServer = createServer(app);
-
-  return httpServer;
+  return server;
 }

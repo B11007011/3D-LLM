@@ -79,12 +79,45 @@ export default {
             height: "0",
           },
         },
+        "spin-slow": {
+          "0%": { transform: "rotate3d(1, 1, 1, 0deg)" },
+          "100%": { transform: "rotate3d(1, 1, 1, 360deg)" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "spin-slow": "spin-slow 12s linear infinite",
+        "float": "float 3s ease-in-out infinite",
+      },
+      transformOrigin: {
+        "center-3d": "center center 0",
+      },
+      transform: {
+        "preserve-3d": "preserve-3d",
+      },
+      rotate: {
+        "x-45": "rotateX(45deg)",
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"), 
+    require("@tailwindcss/typography"),
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.preserve-3d': {
+          transformStyle: 'preserve-3d',
+        },
+        '.rotate-x-45': {
+          transform: 'rotateX(45deg)',
+        },
+      }
+      addUtilities(newUtilities)
+    }
+  ],
 } satisfies Config;
