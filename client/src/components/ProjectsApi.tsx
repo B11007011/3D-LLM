@@ -274,6 +274,7 @@ export function ProjectsApi() {
               <div className="text-center py-4 text-gray-500">Please select a project first</div>
             ) : (
               <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="memberName">Member Name</Label>
                   <Input 
@@ -286,34 +287,182 @@ export function ProjectsApi() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="memberRole">Role</Label>
-                  <Input 
+                    <select 
                     id="memberRole" 
                     value={newMemberRole} 
                     onChange={(e) => setNewMemberRole(e.target.value)} 
-                    placeholder="Enter member role" 
-                  />
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Select role</option>
+                      <option value="Lead">Lead</option>
+                      <option value="3D Modeler">3D Modeler</option>
+                      <option value="Texture Artist">Texture Artist</option>
+                      <option value="Animator">Animator</option>
+                      <option value="Rigger">Rigger</option>
+                      <option value="Developer">Developer</option>
+                      <option value="QA Tester">QA Tester</option>
+                    </select>
+                  </div>
                 </div>
                 
-                <Button onClick={handleAddTeamMember} className="w-full">Add Team Member</Button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Permission Level</Label>
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="permView" name="permission" className="h-4 w-4 text-primary" />
+                      <Label htmlFor="permView" className="text-xs font-normal">View only</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="permEdit" name="permission" className="h-4 w-4 text-primary" checked />
+                      <Label htmlFor="permEdit" className="text-xs font-normal">Edit</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="radio" id="permAdmin" name="permission" className="h-4 w-4 text-primary" />
+                      <Label htmlFor="permAdmin" className="text-xs font-normal">Admin</Label>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs">Access To</Label>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="accessFiles" className="h-4 w-4 text-primary" checked />
+                      <Label htmlFor="accessFiles" className="text-xs font-normal">Files</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="accessTasks" className="h-4 w-4 text-primary" checked />
+                      <Label htmlFor="accessTasks" className="text-xs font-normal">Tasks</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="accessReports" className="h-4 w-4 text-primary" checked />
+                      <Label htmlFor="accessReports" className="text-xs font-normal">Reports</Label>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs">Notification Settings</Label>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="notifyTaskAssigned" className="h-4 w-4 text-primary" checked />
+                      <Label htmlFor="notifyTaskAssigned" className="text-xs font-normal">Task assignments</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="notifyDeadlines" className="h-4 w-4 text-primary" checked />
+                      <Label htmlFor="notifyDeadlines" className="text-xs font-normal">Upcoming deadlines</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input type="checkbox" id="notifyChanges" className="h-4 w-4 text-primary" checked />
+                      <Label htmlFor="notifyChanges" className="text-xs font-normal">Project updates</Label>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button onClick={handleAddTeamMember} className="w-full mt-2">Add Team Member</Button>
                 
                 <div className="mt-6">
-                  <h3 className="font-medium mb-2">Team Members ({projectMembers?.length || 0})</h3>
-                  <div className="space-y-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-medium">Team Members ({projectMembers?.length || 0})</h3>
+                    <div className="flex items-center space-x-2">
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          placeholder="Search members..." 
+                          className="text-xs pl-7 pr-2 py-1 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 w-36"
+                        />
+                        <span className="material-icons absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs">search</span>
+                      </div>
+                      <select className="text-xs border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 px-2 py-1">
+                        <option value="all">All roles</option>
+                        <option value="lead">Lead</option>
+                        <option value="modeler">3D Modeler</option>
+                        <option value="artist">Texture Artist</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
                     {projectMembers?.map((member) => (
                       <div 
                         key={member.id} 
-                        className="p-3 border rounded"
+                        className="p-3 border rounded-md hover:border-blue-300 hover:bg-blue-50 transition-colors"
                       >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                              {member.user.name.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div className="ml-3">
                         <div className="font-medium">{member.user.name}</div>
-                        <div className="text-sm text-gray-600">{member.role}</div>
+                              <div className="flex items-center">
+                                <div className="text-sm text-gray-600 mr-2">{member.role}</div>
+                                {member.role === 'Lead' && (
+                                  <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded">Lead</span>
+                                )}
+                              </div>
                         <div className="text-xs mt-1 text-gray-500">{member.user.email}</div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end space-y-2">
+                            <div className="flex space-x-1">
+                              <button className="p-1 text-gray-400 hover:text-blue-500 rounded" title="Edit member">
+                                <span className="material-icons text-sm">edit</span>
+                              </button>
+                              <button className="p-1 text-gray-400 hover:text-blue-500 rounded" title="Assign task">
+                                <span className="material-icons text-sm">assignment</span>
+                              </button>
+                              <button className="p-1 text-gray-400 hover:text-red-500 rounded" title="Remove member">
+                                <span className="material-icons text-sm">delete</span>
+                              </button>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Added {new Date().toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-2 pt-2 border-t border-gray-100">
+                          <div className="flex items-center justify-between text-xs text-gray-500">
+                            <div>
+                              <span className="font-medium text-gray-700">3</span> tasks assigned
+                            </div>
+                            <div>
+                              Last active: <span className="text-green-600">Today, 2:45 PM</span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="material-icons text-green-500 text-xs mr-1">circle</span>
+                              <span>Online</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     ))}
                     
                     {projectMembers?.length === 0 && (
-                      <div className="text-center py-4 text-gray-500">No team members yet</div>
+                      <div className="text-center py-6 border border-dashed rounded-md">
+                        <span className="material-icons text-gray-400 text-3xl">groups</span>
+                        <p className="text-gray-500 mt-2">No team members yet</p>
+                        <p className="text-xs text-gray-400 mt-1">Add your first team member to get started</p>
+                      </div>
                     )}
                   </div>
+                  
+                  {projectMembers && projectMembers.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h4 className="text-sm font-medium mb-2">Team Management Options</h4>
+                      <div className="flex flex-wrap gap-2">
+                        <button className="flex items-center text-xs text-gray-700 bg-gray-100 px-3 py-1.5 rounded hover:bg-gray-200">
+                          <span className="material-icons text-xs mr-1">email</span> Email All
+                        </button>
+                        <button className="flex items-center text-xs text-gray-700 bg-gray-100 px-3 py-1.5 rounded hover:bg-gray-200">
+                          <span className="material-icons text-xs mr-1">cloud_download</span> Export CSV
+                        </button>
+                        <button className="flex items-center text-xs text-gray-700 bg-gray-100 px-3 py-1.5 rounded hover:bg-gray-200">
+                          <span className="material-icons text-xs mr-1">groups</span> Team Roles
+                        </button>
+                        <button className="flex items-center text-xs text-gray-700 bg-gray-100 px-3 py-1.5 rounded hover:bg-gray-200">
+                          <span className="material-icons text-xs mr-1">settings</span> Permissions
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             )}
